@@ -1,0 +1,12 @@
+# Clean URLs — strip .html extension
+/products     /products.html    200
+/docs         /docs.html        200
+/github       /github.html      200
+/about        /about.html       200
+/contact      /contact.html     200
+/products/brain-board    /products/brain-board.html    200
+/products/sensor-board   /products/sensor-board.html   200
+/products/relay-board    /products/relay-board.html    200
+
+# www → root
+https://www.automato.ag/*  https://automato.ag/:splat  301!

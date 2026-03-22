@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planting Calendar — Automato.ag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── EXACT SHARED STYLES from automato.ag ────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #fdf8f0; --cream-mid: #f5f0e4; --cream-dark: #f0ede4;
+  --card-bg: #fffdf8; --border: #e2d8c4; --border-soft: #ede4d0;
+  --green: #3d6b2c; --green-light: #5a9a3a; --green-pale: #eaf5de; --green-tag: #c0dca0;
+  --amber: #c47a2a; --amber-pale: #fdf0dc; --amber-tag: #e8cc9a;
+  --text-dark: #1e2e14; --text-body: #5a4a30; --text-mid: #6a5a40;
+  --text-muted: #7a6a50; --text-light: #a08060;
+  --footer-bg: #2a1e0e; --footer-text: #c8d8b0; --footer-muted: #6a5a3a;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-dark); font-size: 16px; line-height: 1.6; }
+a { color: inherit; text-decoration: none; }
+.mono { font-family: 'DM Mono', monospace; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 2.5rem; }
+
+/* NAV — exact match */
+.nav { position: sticky; top: 0; z-index: 100; background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 1rem 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-size: 20px; font-weight: 700; color: var(--green); letter-spacing: .04em; }
+.nav-logo span { color: var(--amber); }
+.nav-links { display: flex; gap: 2rem; }
+.nav-links a { font-size: 14px; color: var(--text-muted); transition: color .15s; }
+.nav-links a:hover, .nav-links a.active { color: var(--green); font-weight: 600; }
+.nav-cta { background: var(--green); color: #fff; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13px; padding: 9px 20px; border-radius: 20px; border: none; cursor: pointer; }
+.nav-cta:hover { background: #4a8035; }
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; gap: 5px; padding: 4px; }
+.nav-toggle span { display: block; width: 22px; height: 2px; background: var(--text-muted); border-radius: 2px; }
+
+/* PAGE HEADER */
+.page-header { padding: 3.5rem 2.5rem 2.5rem; max-width: 1100px; margin: 0 auto; }
+.section-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--amber); letter-spacing: .15em; text-transform: uppercase; margin-bottom: .5rem; }
+.page-header h1 { font-size: 40px; font-weight: 700; color: var(--text-dark); line-height: 1.08; margin-bottom: .8rem; }
+.page-header h1 em { font-style: normal; color: var(--green); }
+.page-header p { font-size: 15px; color: var(--text-mid); max-width: 540px; line-height: 1.7; }
+hr.divider { border: none; border-top: 1px solid var(--border); }
+
+/* ZIP BAR */
+.zip-bar { background: var(--card-bg); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1rem 2.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.zip-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--amber); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+.zip-field { display: flex; align-items: center; background: var(--cream); border: 1.5px solid var(--border); border-radius: 24px; overflow: hidden; transition: border-color .15s; }
+.zip-field:focus-within { border-color: var(--green); }
+.zip-field input { background: transparent; border: none; outline: none; font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--text-dark); letter-spacing: .1em; padding: 8px 14px; width: 136px; }
+.zip-field input::placeholder { color: var(--text-light); }
+.zip-btn { background: var(--green); color: #fff; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13px; padding: 9px 20px; border: none; border-radius: 20px; cursor: pointer; margin: 3px; transition: background .15s; white-space: nowrap; }
+.zip-btn:hover { background: #4a8035; }
+.status-pill { font-family: 'DM Mono', monospace; font-size: 11px; padding: 5px 14px; border-radius: 20px; display: none; }
+.status-pill.err  { display: inline; color: var(--amber); background: var(--amber-pale); border: 1px solid var(--amber-tag); }
+.status-pill.load { display: inline; color: var(--green); background: var(--green-pale); border: 1px solid var(--green-tag); }
+
+/* FROST CHIPS */
+.frost-chips { margin-left: auto; display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
+.frost-chip { display: flex; flex-direction: column; gap: 1px; }
+.frost-chip-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-light); text-transform: uppercase; letter-spacing: .1em; }
+.frost-chip-value { font-size: 15px; font-weight: 700; color: var(--green); }
+.clock-wrap { display: flex; flex-direction: column; gap: 1px; border-left: 1px solid var(--border); padding-left: 1.5rem; }
+.clock-time { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--text-dark); }
+.clock-date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-light); letter-spacing: .04em; }
+
+/* WARNINGS */
+#warningZone { max-width: 1100px; margin: 1.5rem auto 0; padding: 0 2.5rem; display: flex; flex-direction: column; gap: .75rem; }
+.warn-card { display: flex; gap: 1rem; padding: 1rem 1.2rem; border-radius: 14px; border: 1.5px solid; background: var(--card-bg); animation: fadeUp .3s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+.warn-card.danger  { border-color: #e0b0a0; background: #fdf8f6; }
+.warn-card.caution { border-color: var(--amber-tag); background: var(--amber-pale); }
+.warn-card.safe    { border-color: var(--green-tag); background: var(--green-pale); }
+.warn-card.info    { border-color: #b0c8e8; background: #f2f6fc; }
+.warn-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+.warn-body { flex: 1; }
+.warn-title { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: .13em; text-transform: uppercase; margin-bottom: 4px; }
+.warn-card.danger  .warn-title { color: #9a3a18; }
+.warn-card.caution .warn-title { color: #8a5a10; }
+.warn-card.safe    .warn-title { color: var(--green); }
+.warn-card.info    .warn-title { color: #2a4a8a; }
+.warn-text { font-size: 13px; color: var(--text-body); line-height: 1.6; margin-bottom: .5rem; }
+.warn-text strong { font-weight: 700; color: var(--text-dark); }
+.warn-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.warn-action { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); padding: 3px 10px; background: rgba(255,255,255,.7); border: 1px solid var(--border); border-radius: 20px; }
+.warn-action::before { content: '→ '; color: var(--green); }
+
+/* MAIN */
+main { max-width: 1100px; margin: 2rem auto; padding: 0 2.5rem 4rem; }
+
+/* CONTROLS */
+.controls { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.ctrl-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-light); letter-spacing: .12em; text-transform: uppercase; margin-right: .25rem; }
+.filter-btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all .15s; }
+.filter-btn:hover { border-color: var(--green-tag); color: var(--green); background: var(--green-pale); }
+.filter-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* LEGEND */
+.legend { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; padding: .75rem 1.2rem; background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 14px; }
+.leg-item { display: flex; align-items: center; gap: .5rem; font-size: 13px; color: var(--text-muted); }
+.leg-dot { width: 14px; height: 14px; border-radius: 20px; flex-shrink: 0; }
+
+/* CALENDAR CARD */
+.cal-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(30,46,20,.06); }
+.cal-wrap { overflow-x: auto; }
+.cal-table { width: 100%; min-width: 960px; border-collapse: collapse; }
+
+/* Month header */
+.month-row th { background: var(--text-dark); color: var(--cream-mid); font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; padding: 10px 4px; text-align: center; border-right: 1px solid rgba(255,255,255,.07); border-bottom: 1.5px solid var(--border); }
+.month-row th.plant-col { text-align: left; padding-left: 16px; min-width: 172px; position: sticky; left: 0; z-index: 5; background: var(--text-dark); }
+
+/* Week header */
+.week-row th { background: #2e3e20; color: var(--text-light); font-family: 'DM Mono', monospace; font-size: 9px; padding: 4px 2px; text-align: center; border-right: 1px solid rgba(226,216,196,.1); border-bottom: 1.5px solid var(--border); }
+.week-row th.plant-col { text-align: left; padding-left: 16px; position: sticky; left: 0; z-index: 5; background: #2e3e20; color: var(--green-tag); }
+.week-row th.frost-wk { color: #a0c0e8; }
+
+/* Category rows */
+.cat-row { cursor: pointer; }
+.cat-row td { background: var(--cream-mid); color: var(--text-mid); font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; padding: 7px 16px; border-bottom: 1.5px solid var(--border); border-top: 1.5px solid var(--border); transition: background .15s; }
+.cat-row:hover td { background: var(--cream-dark); }
+.cat-arrow { display: inline-block; margin-right: 8px; font-size: 8px; transition: transform .2s ease; color: var(--text-light); }
+.cat-arrow.closed { transform: rotate(-90deg); }
+.cat-badge { float: right; font-weight: 400; color: var(--text-light); font-size: 9px; margin-right: 4px; }
+
+/* Plant rows */
+.plant-row { border-bottom: 1px solid rgba(226,216,196,.4); transition: background .1s; }
+.plant-row:hover { background: rgba(234,245,222,.4); }
+.plant-row.hidden-row { display: none; }
+.plant-cell { padding: 8px 16px; min-width: 172px; border-right: 1.5px solid var(--border); position: sticky; left: 0; background: var(--card-bg); z-index: 2; transition: background .1s; }
+.plant-row:hover .plant-cell { background: rgba(234,245,222,.4); }
+.plant-name { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+.plant-cat { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-light); text-transform: uppercase; letter-spacing: .08em; margin-top: 1px; }
+
+/* Week cells */
+.wcell { width: 20px; height: 36px; border-right: 1px solid rgba(226,216,196,.2); position: relative; }
+.wcell.mend { border-right: 1px solid var(--border-soft); }
+
+/* Event bars */
+.ebar { position: absolute; inset: 4px 1px; border-radius: 20px; transition: filter .12s, transform .12s; cursor: pointer; }
+.ebar:hover { filter: brightness(1.15); transform: scaleY(1.1); z-index: 10; }
+.ev-sow-indoor  { background: #7c5cbf; }
+.ev-transplant  { background: var(--amber); }
+.ev-direct-sow  { background: var(--green); }
+.ev-sow-outdoor { background: #3a6ab8; }
+.ev-harvest     { background: #b84820; opacity: .8; }
+
+/* Frost line */
+.frost-line { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(58,106,184,.5); z-index: 8; pointer-events: none; }
+
+/* PLACEHOLDER */
+.placeholder { text-align: center; padding: 5rem 2rem; background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 16px; }
+.placeholder-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .35; }
+.placeholder h2 { font-size: 24px; font-weight: 700; color: var(--text-dark); margin-bottom: .5rem; }
+.placeholder p { font-size: 14px; color: var(--text-muted); line-height: 1.7; max-width: 380px; margin: 0 auto; }
+.placeholder code { font-family: 'DM Mono', monospace; color: var(--amber); background: var(--amber-pale); padding: 1px 6px; border-radius: 20px; font-size: 13px; }
+
+/* TOOLTIP */
+.tip { position: fixed; background: var(--text-dark); color: var(--cream); font-family: 'DM Mono', monospace; font-size: 11px; padding: 10px 14px; border-radius: 12px; pointer-events: none; z-index: 2000; opacity: 0; transition: opacity .12s; max-width: 240px; line-height: 1.55; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+.tip.show { opacity: 1; }
+.tip-label { color: var(--green-tag); font-weight: 500; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+.tip-dates { color: #c8e8a0; font-size: 13px; display: block; margin-bottom: 3px; }
+.tip-desc { color: var(--footer-muted); font-size: 10px; }
+
+/* FOOTER — exact match */
+.footer-wrap { background: var(--footer-bg); margin-top: 4rem; }
+.footer { padding: 2.5rem; display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; flex-wrap: wrap; gap: 1rem; }
+.footer-logo { font-size: 17px; font-weight: 700; color: var(--footer-text); }
+.footer-logo span { color: #e8a84a; }
+.footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.footer-links a { font-size: 13px; color: #8a7a5a; transition: color .12s; }
+.footer-links a:hover { color: var(--footer-text); }
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--footer-muted); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--cream-mid); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
+
+@media (max-width: 600px) {
+  .nav-links, .nav-cta { display: none; }
+  .nav-toggle { display: flex; }
+  .page-header, .zip-bar, main, #warningZone { padding-left: 1.2rem; padding-right: 1.2rem; }
+  .page-header h1 { font-size: 28px; }
+  .frost-chips, .clock-wrap { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV — exact automato.ag markup -->
+<nav class="nav">
+  <a href="https://automato.ag" class="nav-logo">Automato<span>.ag</span></a>
+  <div class="nav-links" id="nav-links">
+    <a href="https://automato.ag/products">Products</a>
+    <a href="https://automato.ag/docs">Docs</a>
+    <a href="https://automato.ag/github">GitHub</a>
+    <a href="https://automato.ag/about">About</a>
+    <a href="https://automato.ag/contact">Contact</a>
+  </div>
+  <a class="nav-cta" href="https://automato.ag/products">Shop now</a>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="section-label">Grow smarter</div>
+  <h1>Planting <em>Calendar</em></h1>
+  <p>Personalised sow, transplant &amp; harvest windows for your ZIP code — based on NOAA 30-year frost normals and University Cooperative Extension guidelines.</p>
+</div>
+<hr class="divider">
+
+<!-- ZIP BAR -->
+<div class="zip-bar">
+  <span class="zip-label">Your ZIP code</span>
+  <div class="zip-field">
+    <input type="text" id="zipInput" placeholder="e.g. 37201" maxlength="5" pattern="[0-9]{5}">
+    <button class="zip-btn" onclick="loadCalendar()">Generate ↵</button>
+  </div>
+  <span id="statusPill" class="status-pill"></span>
+  <div class="frost-chips" id="frostChips" style="display:none">
+    <div class="frost-chip">
+      <span class="frost-chip-label">Last Spring Frost</span>
+      <span class="frost-chip-value" id="chipSpring">—</span>
+    </div>
+    <div class="frost-chip">
+      <span class="frost-chip-label">First Fall Frost</span>
+      <span class="frost-chip-value" id="chipFall">—</span>
+    </div>
+    <div class="frost-chip">
+      <span class="frost-chip-label">Growing Season</span>
+      <span class="frost-chip-value" id="chipSeason">—</span>
+    </div>
+    <div class="clock-wrap">
+      <span class="clock-time" id="clockTime">--:-- --</span>
+      <span class="clock-date" id="clockDate">---</span>
+    </div>
+  </div>
+</div>
+
+<!-- WARNINGS -->
+<div id="warningZone"></div>
+
+<!-- MAIN -->
+<main>
+  <div id="placeholder" class="placeholder">
+    <div class="placeholder-icon">🌱</div>
+    <h2>Enter your ZIP code above</h2>
+    <p>Your personalised calendar will show sowing, transplanting &amp; harvest windows based on your local frost dates. Try <code>37201</code> for Nashville.</p>
+  </div>
+  <div id="calSection" style="display:none">
+    <div class="controls" id="filterRow"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#7c5cbf"></div>Sow Indoors</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#c47a2a"></div>Transplant Outside</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#3d6b2c"></div>Direct Sow Outdoors</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#3a6ab8"></div>Fall Planting</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#b84820"></div>Harvest Window</div>
+    </div>
+    <div class="cal-card">
+      <div class="cal-wrap">
+        <table class="cal-table" id="calTable"></table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER — exact automato.ag markup -->
+<div class="footer-wrap">
+  <div class="footer">
+    <div class="footer-logo">Automato<span>.ag</span></div>
+    <div class="footer-links">
+      <a href="https://automato.ag/products">Products</a>
+      <a href="https://automato.ag/docs">Docs</a>
+      <a href="https://automato.ag/github">GitHub</a>
+      <a href="https://automato.ag/about">About</a>
+      <a href="https://automato.ag/contact">Contact</a>
+    </div>
+    <div class="footer-copy">© 2026 Automato.ag</div>
+  </div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+
+// ── FROST DATE DATABASE (NOAA / Cooperative Extension derived) ──────────────
+// Keyed by ZIP prefix (3-digit) → [lastSpringFrost, firstFallFrost] as [month,day] (1-indexed)
+// Covers major US regions; fallback by state from zip prefix
+const FROST_BY_PREFIX = {
+  // Alaska
+  "995":"3-15","996":"3-20","997":"3-25","998":"4-1","999":"4-15",
+  // Hawaii
+  "967":"1-1","968":"1-1",
+  // Pacific NW (WA, OR)
+  "980":"3-15","981":"3-15","982":"3-20","983":"3-25","984":"3-28","985":"4-1",
+  "986":"4-5","987":"4-10","988":"4-15","989":"5-1",
+  "970":"3-15","971":"3-15","972":"3-20","973":"3-25","974":"3-28","975":"4-1",
+  "976":"4-5","977":"4-10","978":"4-15","979":"5-1",
+  // California
+  "900":"2-1","901":"2-1","902":"2-1","903":"2-1","904":"2-1","905":"2-1",
+  "906":"2-1","907":"2-1","908":"2-1","909":"2-15","910":"2-15","911":"2-15",
+  "912":"2-15","913":"2-20","914":"3-1","915":"2-15","916":"3-1","917":"3-15",
+  "918":"3-1","919":"2-15","920":"2-1","921":"2-1","922":"2-15","923":"3-1",
+  "924":"3-1","925":"3-1","926":"3-1","927":"3-1","928":"3-15","930":"3-1",
+  "931":"3-15","932":"3-1","933":"3-15","934":"3-1","935":"3-15","936":"3-15",
+  "937":"4-1","938":"4-15","939":"3-15","940":"3-1","941":"3-1","942":"3-15",
+  "943":"3-15","944":"3-1","945":"3-1","946":"3-1","947":"3-1","948":"3-1",
+  "949":"3-1","950":"3-15","951":"3-15","952":"3-15","953":"3-15","954":"3-1",
+  "955":"4-1","956":"4-1","957":"4-1","958":"4-1","959":"4-15","960":"4-15",
+  "961":"4-15",
+  // Nevada / Arizona
+  "889":"3-15","890":"3-1","891":"3-1","893":"3-15","894":"4-1","895":"4-15",
+  "850":"3-1","851":"3-1","852":"3-1","853":"3-15","854":"3-15","855":"4-1",
+  "856":"3-1","857":"3-1","859":"3-15","860":"3-15","863":"4-1","864":"4-15",
+  "865":"4-15",
+  // Utah / Colorado / NM
+  "840":"4-15","841":"4-20","842":"5-1","843":"5-1","844":"5-10","845":"5-15",
+  "846":"5-1","847":"5-15",
+  "800":"5-1","801":"5-7","802":"5-7","803":"5-15","804":"5-15","805":"5-15",
+  "806":"5-20","807":"5-15","808":"5-15","809":"5-25","810":"5-25","811":"5-15",
+  "812":"5-15","813":"5-15","814":"5-15","815":"5-7","816":"5-7",
+  "870":"4-15","871":"4-15","872":"4-20","873":"4-20","874":"4-25","875":"4-15",
+  "876":"4-15","877":"4-20","878":"4-15","879":"4-15","880":"4-1","881":"4-1",
+  "882":"4-1","883":"4-15","884":"4-15",
+  // Montana / Wyoming / Idaho
+  "590":"5-15","591":"5-15","592":"5-15","593":"5-20","594":"5-25","595":"6-1",
+  "596":"5-20","597":"5-15","598":"5-15","599":"5-25",
+  "820":"5-15","821":"5-20","822":"5-20","823":"5-25","824":"5-25","825":"5-25",
+  "826":"5-20","827":"5-20","828":"5-20","829":"5-25","830":"5-20","831":"5-20",
+  "832":"5-10","833":"5-10","834":"5-10","835":"5-15","836":"5-15","837":"5-20",
+  "838":"5-15",
+  // North/South Dakota
+  "570":"5-7","571":"5-7","572":"5-10","573":"5-10","574":"5-7","575":"5-10",
+  "576":"5-10","577":"5-7",
+  "580":"5-10","581":"5-10","582":"5-10","583":"5-10","584":"5-10","585":"5-10",
+  "586":"5-7","587":"5-7","588":"5-7",
+  // Nebraska / Kansas
+  "680":"4-15","681":"4-15","682":"4-15","683":"4-20","684":"4-20","685":"4-20",
+  "686":"4-25","687":"4-25","688":"5-1","689":"5-1","690":"5-7","691":"5-7",
+  "692":"5-7","693":"5-10","694":"5-10","695":"5-10",
+  "660":"4-10","661":"4-10","662":"4-10","664":"4-7","665":"4-7","666":"4-10",
+  "667":"4-10","668":"4-15","669":"4-15","670":"4-10","671":"4-10","672":"4-10",
+  "673":"4-7","674":"4-7","675":"4-7","676":"4-10","677":"4-15","678":"4-20",
+  "679":"4-20",
+  // Oklahoma / Texas (north)
+  "730":"4-1","731":"4-1","734":"4-1","735":"4-1","736":"3-28","737":"3-25",
+  "738":"4-1","739":"4-5","740":"4-1","741":"4-1","743":"4-5","744":"4-10",
+  "745":"4-7","746":"4-1","747":"3-28","748":"3-25","749":"4-1",
+  "750":"3-15","751":"3-15","752":"3-15","753":"3-15","754":"3-20","755":"3-20",
+  "756":"3-15","757":"3-15","758":"3-15","759":"3-20",
+  "760":"3-20","761":"3-20","762":"3-25","763":"3-25","764":"3-28","765":"3-28",
+  "766":"3-28","767":"3-25","768":"3-25","769":"3-28",
+  "770":"2-15","772":"2-15","773":"2-15","774":"2-15","775":"2-20","776":"2-20",
+  "777":"2-20","778":"2-15","779":"2-15",
+  "780":"3-1","781":"3-1","782":"3-1","783":"3-1","784":"3-1","785":"3-7",
+  "786":"3-1","787":"3-1","788":"3-15","789":"3-20","790":"4-15","791":"4-15",
+  "792":"4-15","793":"4-20","794":"4-20","795":"4-20","796":"4-20","797":"4-25",
+  "798":"4-25","799":"4-25",
+  // Minnesota / Wisconsin / Michigan
+  "550":"4-28","551":"4-28","553":"4-28","554":"5-1","555":"5-7","556":"5-7",
+  "557":"5-10","558":"5-10","559":"5-15","560":"5-7","561":"5-10","562":"5-10",
+  "563":"5-10","564":"5-10","565":"5-7","566":"5-15","567":"5-20",
+  "530":"4-25","531":"4-25","532":"5-1","534":"5-1","535":"5-7","537":"5-10",
+  "538":"5-10","539":"5-10","540":"5-10","541":"5-7","542":"5-7","543":"5-7",
+  "544":"5-10","545":"5-15","546":"5-10","547":"5-10","548":"5-7","549":"5-7",
+  "480":"4-20","481":"4-20","482":"4-20","483":"4-25","484":"4-25","485":"4-28",
+  "486":"5-1","487":"5-1","488":"5-1","489":"5-7","490":"5-7","491":"5-10",
+  "492":"5-7","493":"5-7","494":"5-10","495":"5-10","496":"5-15","497":"5-1",
+  "498":"5-7","499":"5-15",
+  // Iowa / Missouri / Illinois / Indiana / Ohio
+  "500":"4-20","501":"4-20","502":"4-20","503":"4-20","504":"4-25","505":"5-1",
+  "506":"4-28","507":"5-1","508":"5-1",
+  "630":"4-10","631":"4-10","633":"4-15","634":"4-15","635":"4-20","636":"4-15",
+  "637":"4-10","638":"4-10","639":"4-10","640":"4-7","641":"4-7","644":"4-10",
+  "645":"4-10","646":"4-15","647":"4-15","648":"4-15","649":"4-15",
+  "600":"4-20","601":"4-20","602":"4-20","603":"4-20","604":"4-20","605":"4-20",
+  "606":"4-15","607":"4-20","608":"4-25","609":"4-20","610":"4-20","611":"4-20",
+  "612":"4-20","613":"4-20","614":"4-20","615":"4-15","616":"4-15","617":"4-15",
+  "618":"4-15","619":"4-10",
+  "460":"4-20","461":"4-20","462":"4-20","463":"4-20","464":"4-20","465":"4-25",
+  "466":"4-25","467":"4-28","468":"4-28","469":"5-1","470":"4-15","471":"4-15",
+  "472":"4-15","473":"4-15","474":"4-15","475":"4-20","476":"4-15","477":"4-15",
+  "478":"4-15","479":"4-15",
+  "430":"4-25","431":"4-25","432":"4-25","433":"4-25","434":"4-28","435":"4-28",
+  "436":"4-28","437":"4-28","438":"4-28","439":"4-28","440":"4-20","441":"4-20",
+  "442":"4-20","443":"4-25","444":"4-25","445":"4-28","446":"4-28","447":"4-28",
+  "448":"5-1","449":"5-1","450":"4-15","451":"4-15","452":"4-15","453":"4-15",
+  "454":"4-15","455":"4-20","456":"4-20","457":"4-20","458":"4-20",
+  // Pennsylvania / NY / NJ / New England
+  "150":"4-20","151":"4-20","152":"4-25","153":"4-25","154":"4-25","155":"4-25",
+  "156":"4-25","157":"4-28","158":"4-28","159":"4-28","160":"4-25","161":"4-25",
+  "162":"4-28","163":"4-28","164":"4-25","165":"4-28","166":"4-28","167":"5-1",
+  "168":"4-28","169":"4-28","170":"4-15","171":"4-15","172":"4-15","173":"4-15",
+  "174":"4-20","175":"4-20","176":"4-20","177":"4-25","178":"4-25","179":"4-25",
+  "180":"4-15","181":"4-15","182":"4-15","183":"4-15","184":"4-15","185":"4-15",
+  "186":"4-15","187":"4-15","188":"4-15","189":"4-20","190":"4-15","191":"4-15",
+  "192":"4-15","193":"4-15","194":"4-15","195":"4-15","196":"4-15",
+  "070":"4-10","071":"4-10","072":"4-10","073":"4-10","074":"4-10","075":"4-10",
+  "076":"4-10","077":"4-10","078":"4-10","079":"4-10","080":"4-7","081":"4-7",
+  "082":"4-7","083":"4-7","084":"4-7","085":"4-7","086":"4-7","087":"4-7",
+  "088":"4-7","089":"4-7",
+  "100":"4-1","101":"4-1","102":"4-1","103":"4-1","104":"4-7","105":"4-15",
+  "106":"4-10","107":"4-15","108":"4-15","109":"4-20",
+  "110":"4-7","111":"4-7","112":"4-7","113":"4-7","114":"4-7","115":"4-7",
+  "116":"4-7","117":"4-7","118":"4-7","119":"4-10",
+  "120":"4-15","121":"4-20","122":"4-20","123":"4-25","124":"4-20","125":"4-20",
+  "126":"4-25","127":"4-25","128":"4-28","129":"4-28","130":"4-20","131":"4-20",
+  "132":"4-25","133":"4-25","134":"4-28","135":"4-28","136":"4-28","137":"5-1",
+  "138":"5-1","139":"5-1","140":"4-25","141":"4-25","142":"4-28","143":"4-28",
+  "144":"4-28","145":"5-1","146":"5-1","147":"5-1","148":"5-1","149":"5-1",
+  "010":"4-28","011":"5-1","012":"5-7","013":"5-7","014":"5-10","015":"4-28",
+  "016":"5-1","017":"5-1","018":"4-20","019":"4-20",
+  "020":"4-20","021":"4-20","022":"4-20","023":"4-25","024":"4-20","025":"4-28",
+  "026":"5-1","027":"5-1","028":"4-20","029":"4-15",
+  "030":"5-1","031":"5-7","032":"5-7","033":"5-10","034":"5-15","035":"5-10",
+  "036":"5-15","037":"5-20","038":"5-7",
+  "039":"5-10","040":"5-10","041":"5-10","042":"5-15","043":"5-15","044":"5-15",
+  "045":"5-20","046":"5-7","047":"5-7","048":"5-7","049":"5-10",
+  "050":"5-10","051":"5-15","052":"5-20","053":"5-25","054":"5-15","056":"5-10",
+  "057":"5-15","058":"5-20","059":"5-10",
+  // Mid-Atlantic / Southeast
+  "200":"3-25","201":"3-25","202":"3-25","203":"3-25","204":"3-25","205":"3-25",
+  "206":"3-28","207":"3-28","208":"3-28","209":"3-28",
+  "210":"3-25","211":"3-25","212":"3-25","213":"3-28","214":"3-28","215":"3-28",
+  "216":"4-1","217":"4-1","218":"4-5","219":"4-5",
+  "220":"3-28","221":"3-25","222":"3-25","223":"3-28","224":"4-1","225":"3-25",
+  "226":"3-28","227":"3-28","228":"3-28","229":"3-25",
+  "230":"3-25","231":"3-25","232":"3-25","233":"3-25","234":"3-20","235":"3-20",
+  "236":"3-20","237":"3-25","238":"3-25","239":"3-25","240":"4-15","241":"4-15",
+  "242":"4-20","243":"4-25","244":"4-25","245":"4-25","246":"4-25",
+  "250":"4-15","251":"4-15","252":"4-20","253":"4-25","254":"4-25","255":"4-20",
+  "256":"4-20","257":"4-20","258":"4-25","259":"4-25","260":"4-15","261":"4-20",
+  "262":"4-25","263":"4-25","264":"4-25","265":"5-1","266":"5-1","267":"5-1",
+  "268":"5-1",
+  "270":"4-1","271":"4-5","272":"4-5","273":"4-5","274":"4-10","275":"4-5",
+  "276":"4-5","277":"3-28","278":"4-1","279":"4-5","280":"4-1","281":"3-25",
+  "282":"3-25","283":"3-28","284":"3-28","285":"3-28","286":"3-28","287":"4-1",
+  "288":"4-5","289":"4-5",
+  "290":"3-15","291":"3-15","292":"3-15","293":"3-20","294":"3-20","295":"3-20",
+  "296":"3-25","297":"3-25","298":"3-25","299":"3-15",
+  "300":"3-15","301":"3-20","302":"3-20","303":"3-20","304":"3-25","305":"3-15",
+  "306":"3-15","307":"3-20","308":"3-15","309":"3-15",
+  "310":"3-7","311":"3-7","312":"3-7","313":"3-7","314":"3-7","315":"3-7",
+  "316":"3-15","317":"3-15","318":"3-1","319":"3-1",
+  "320":"2-15","321":"2-15","322":"2-15","323":"3-1","324":"3-1","325":"3-1",
+  "326":"3-1","327":"3-7","328":"3-7","329":"2-15",
+  "330":"2-1","331":"2-1","332":"2-1","333":"2-1","334":"2-1","335":"2-1",
+  "336":"2-15","337":"2-15","338":"2-15","339":"2-1","340":"2-1",
+  "341":"2-15","342":"2-15","344":"2-15","346":"2-15","347":"2-15","349":"2-15",
+  "350":"3-20","351":"3-25","352":"3-25","354":"3-25","355":"3-20","356":"3-20",
+  "357":"3-25","358":"3-25","359":"3-28","360":"3-15","361":"3-15","362":"3-15",
+  "363":"3-20","364":"3-20","365":"3-10","366":"3-10","367":"3-20","368":"3-20",
+  "369":"3-20",
+  "370":"4-1","371":"4-7","372":"4-7","373":"4-10","374":"4-10","375":"4-5",
+  "376":"4-5","377":"4-10","378":"4-10","379":"4-10","380":"4-1","381":"4-1",
+  "382":"4-5","383":"4-10","384":"4-15","385":"4-15",
+  "386":"3-25","387":"3-25","388":"3-25","389":"3-25","390":"3-10","391":"3-10",
+  "392":"3-15","393":"3-10","394":"3-15","395":"3-10","396":"3-15","397":"3-15",
+  "398":"3-20","399":"3-20",
+  "400":"4-10","401":"4-10","402":"4-10","403":"4-10","404":"4-15","405":"4-15",
+  "406":"4-20","407":"4-20","408":"4-20","409":"4-20","410":"4-15","411":"4-15",
+  "412":"4-20","413":"4-25","414":"4-25","415":"4-25","416":"4-25","417":"4-15",
+  "418":"4-15",
+  "420":"4-15","421":"4-20","422":"4-20","423":"4-20","424":"4-25","425":"4-25",
+  "426":"4-25","427":"4-25",
+};
+
+// Fall frost offset from spring frost (days): spring + offset = fall frost day of year
+// Simplified: just store months for fall frost keyed the same way
+const FALL_FROST_BY_PREFIX = {
+  // This is "first fall frost" month/day
+  // Alaska
+  "995":"9-1","996":"8-25","997":"8-20","998":"9-1","999":"9-15",
+  "967":"12-31","968":"12-31",
+  // Pacific NW
+  "980":"11-15","981":"11-15","982":"11-1","983":"10-25","984":"10-20","985":"10-15",
+  "986":"10-10","987":"10-1","988":"9-20","989":"9-10",
+  "970":"11-15","971":"11-15","972":"11-1","973":"10-25","974":"10-20","975":"10-15",
+  "976":"10-10","977":"10-1","978":"9-20","979":"9-10",
+};
+
+// Default fall frosts by spring frost month (approximate growing season length)
+function estimateFallFrost(springFrostDate) {
+  const sm = springFrostDate.getMonth()+1;
+  const sd = springFrostDate.getDate();
+  // Approximate: southern areas have longer seasons
+  if (sm <= 2) return parseDate("11-15"); // Zone 9-10
+  if (sm <= 3) return parseDate("11-1");  // Zone 8
+  if (sm <= 4 && sd <= 15) return parseDate("10-25"); // Zone 7
+  if (sm <= 4) return parseDate("10-15"); // Zone 6
+  if (sm <= 5 && sd <= 10) return parseDate("10-7"); // Zone 5
+  if (sm <= 5) return parseDate("9-25"); // Zone 4-5
+  return parseDate("9-10"); // Zone 3-4
+}
+
+function parseDate(str) {
+  const [m,d] = str.split('-').map(Number);
+  const dt = new Date(2024, m-1, d);
+  return dt;
+}
+
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function getFrostDates(zip) {
+  const prefix3 = zip.substring(0,3);
+  const springStr = FROST_BY_PREFIX[prefix3];
+  if (!springStr) return null;
+  const spring = parseDate(springStr);
+  const fallStr = FALL_FROST_BY_PREFIX[prefix3];
+  const fall = fallStr ? parseDate(fallStr) : estimateFallFrost(spring);
+  return { spring, fall };
+}
+
+// ── PLANT DATABASE ──────────────────────────────────────────────────────────
+// offsets relative to last spring frost (LSF) in days (+= after, -= before)
+// indoorStart, indoorEnd, transplantStart, transplantEnd,
+// directSowStart, directSowEnd, fallDirectStart, fallDirectEnd,
+// harvestStart (from transplant), harvestDays
+// Source: OSU, UMN, USU, NCSU, Old Farmer's Almanac Extension data
+
+const PLANTS = [
+  // VEGETABLES
+  { name:"Tomato", cat:"Vegetables", color:"#C06B5A",
+    indoorStart:-63, indoorEnd:-42,
+    transplantStart:14, transplantEnd:42,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:70, harvestDays:45 },
+
+  { name:"Pepper", cat:"Vegetables", color:"#C8813A",
+    indoorStart:-84, indoorEnd:-56,
+    transplantStart:14, transplantEnd:42,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:75, harvestDays:40 },
+
+  { name:"Eggplant", cat:"Vegetables", color:"#8B6FAA",
+    indoorStart:-84, indoorEnd:-56,
+    transplantStart:14, transplantEnd:42,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:70, harvestDays:40 },
+
+  { name:"Cabbage", cat:"Vegetables", color:"#5A8F5A",
+    indoorStart:-70, indoorEnd:-49,
+    transplantStart:-21, transplantEnd:14,
+    directSow:false,
+    fallDirect:true, fallDirectOffset:-84, fallDirectDays:21,
+    harvestFromTransplant:70, harvestDays:30 },
+
+  { name:"Broccoli", cat:"Vegetables", color:"#4A7A4A",
+    indoorStart:-70, indoorEnd:-49,
+    transplantStart:-21, transplantEnd:0,
+    directSow:false,
+    fallDirect:true, fallDirectOffset:-91, fallDirectDays:21,
+    harvestFromTransplant:55, harvestDays:21 },
+
+  { name:"Cauliflower", cat:"Vegetables", color:"#A8A890",
+    indoorStart:-70, indoorEnd:-49,
+    transplantStart:-21, transplantEnd:0,
+    directSow:false,
+    fallDirect:true, fallDirectOffset:-84, fallDirectDays:21,
+    harvestFromTransplant:60, harvestDays:21 },
+
+  { name:"Brussels Sprouts", cat:"Vegetables", color:"#6A9A6A",
+    indoorStart:-112, indoorEnd:-84,
+    transplantStart:-21, transplantEnd:0,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:90, harvestDays:45 },
+
+  { name:"Kale", cat:"Vegetables", color:"#3A7A5A",
+    indoorStart:-42, indoorEnd:-28,
+    transplantStart:-28, transplantEnd:14,
+    directSow:true, directSowStart:-14, directSowEnd:28,
+    fallDirect:true, fallDirectOffset:-77, fallDirectDays:35,
+    harvestFromTransplant:55, harvestDays:60 },
+
+  { name:"Lettuce", cat:"Vegetables", color:"#8ACA7A",
+    indoorStart:-42, indoorEnd:-21,
+    transplantStart:-28, transplantEnd:0,
+    directSow:true, directSowStart:-28, directSowEnd:14,
+    fallDirect:true, fallDirectOffset:-63, fallDirectDays:35,
+    harvestFromTransplant:45, harvestDays:30 },
+
+  { name:"Spinach", cat:"Vegetables", color:"#2A8A4A",
+    indoorStart:null, indoorEnd:null,
+    transplantStart:null, transplantEnd:null,
+    directSow:true, directSowStart:-42, directSowEnd:0,
+    fallDirect:true, fallDirectOffset:-56, fallDirectDays:28,
+    harvestFromTransplant:40, harvestDays:30 },
+
+  { name:"Arugula", cat:"Vegetables", color:"#6A9A4A",
+    indoorStart:null,
+    directSow:true, directSowStart:-42, directSowEnd:0,
+    fallDirect:true, fallDirectOffset:-49, fallDirectDays:35,
+    harvestFromTransplant:35, harvestDays:35 },
+
+  { name:"Swiss Chard", cat:"Vegetables", color:"#CA4A4A",
+    indoorStart:-28, indoorEnd:-14,
+    transplantStart:-14, transplantEnd:21,
+    directSow:true, directSowStart:-14, directSowEnd:28,
+    fallDirect:true, fallDirectOffset:-70, fallDirectDays:28,
+    harvestFromTransplant:50, harvestDays:60 },
+
+  { name:"Beets", cat:"Vegetables", color:"#8A3A5A",
+    indoorStart:null,
+    directSow:true, directSowStart:-28, directSowEnd:28,
+    fallDirect:true, fallDirectOffset:-63, fallDirectDays:28,
+    harvestFromTransplant:55, harvestDays:30 },
+
+  { name:"Carrots", cat:"Vegetables", color:"#E07A2A",
+    indoorStart:null,
+    directSow:true, directSowStart:-21, directSowEnd:42,
+    fallDirect:true, fallDirectOffset:-77, fallDirectDays:28,
+    harvestFromTransplant:70, harvestDays:30 },
+
+  { name:"Radish", cat:"Vegetables", color:"#D04A5A",
+    indoorStart:null,
+    directSow:true, directSowStart:-28, directSowEnd:14,
+    fallDirect:true, fallDirectOffset:-35, fallDirectDays:28,
+    harvestFromTransplant:25, harvestDays:14 },
+
+  { name:"Peas", cat:"Vegetables", color:"#7AAA5A",
+    indoorStart:null,
+    directSow:true, directSowStart:-42, directSowEnd:-7,
+    fallDirect:true, fallDirectOffset:-70, fallDirectDays:21,
+    harvestFromTransplant:60, harvestDays:21 },
+
+  { name:"Green Beans", cat:"Vegetables", color:"#5A8A3A",
+    indoorStart:null,
+    directSow:true, directSowStart:7, directSowEnd:56,
+    fallDirect:false,
+    harvestFromTransplant:55, harvestDays:21 },
+
+  { name:"Cucumber", cat:"Vegetables", color:"#4A9A6A",
+    indoorStart:-28, indoorEnd:-14,
+    transplantStart:7, transplantEnd:42,
+    directSow:true, directSowStart:14, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:55, harvestDays:35 },
+
+  { name:"Zucchini / Summer Squash", cat:"Vegetables", color:"#9AAA4A",
+    indoorStart:-21, indoorEnd:-14,
+    transplantStart:7, transplantEnd:42,
+    directSow:true, directSowStart:14, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:50, harvestDays:42 },
+
+  { name:"Winter Squash / Pumpkin", cat:"Vegetables", color:"#CA7A2A",
+    indoorStart:-28, indoorEnd:-14,
+    transplantStart:14, transplantEnd:42,
+    directSow:true, directSowStart:14, directSowEnd:28,
+    fallDirect:false,
+    harvestFromTransplant:90, harvestDays:21 },
+
+  { name:"Onion (from seed)", cat:"Vegetables", color:"#CAAA5A",
+    indoorStart:-112, indoorEnd:-70,
+    transplantStart:-28, transplantEnd:14,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:100, harvestDays:30 },
+
+  { name:"Leek", cat:"Vegetables", color:"#6AAA6A",
+    indoorStart:-112, indoorEnd:-84,
+    transplantStart:-14, transplantEnd:28,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:105, harvestDays:30 },
+
+  { name:"Celery", cat:"Vegetables", color:"#7AAA5A",
+    indoorStart:-84, indoorEnd:-56,
+    transplantStart:0, transplantEnd:21,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:90, harvestDays:30 },
+
+  { name:"Corn", cat:"Vegetables", color:"#E0CA3A",
+    indoorStart:null,
+    directSow:true, directSowStart:14, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:75, harvestDays:14 },
+
+  { name:"Garlic", cat:"Vegetables", color:"#CAC0A0",
+    indoorStart:null,
+    directSow:false,
+    fallDirect:true, fallDirectOffset:-7, fallDirectDays:21, fallNote:"Plant in fall for summer harvest",
+    harvestFromTransplant:240, harvestDays:21 },
+
+  // FRUIT
+  { name:"Strawberry", cat:"Fruit", color:"#D94F4F",
+    indoorStart:-70, indoorEnd:-49,
+    transplantStart:-21, transplantEnd:14,
+    directSow:false,
+    fallDirect:true, fallDirectOffset:-42, fallDirectDays:21,
+    harvestFromTransplant:60, harvestDays:30 },
+
+  { name:"Tomato (Cherry)", cat:"Fruit", color:"#E05A3A",
+    indoorStart:-63, indoorEnd:-42,
+    transplantStart:14, transplantEnd:42,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:65, harvestDays:60 },
+
+  { name:"Watermelon", cat:"Fruit", color:"#5AAA3A",
+    indoorStart:-28, indoorEnd:-14,
+    transplantStart:21, transplantEnd:49,
+    directSow:true, directSowStart:21, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:80, harvestDays:21 },
+
+  { name:"Cantaloupe / Melon", cat:"Fruit", color:"#D4A030",
+    indoorStart:-28, indoorEnd:-14,
+    transplantStart:21, transplantEnd:49,
+    directSow:true, directSowStart:21, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:75, harvestDays:21 },
+
+  { name:"Pumpkin", cat:"Fruit", color:"#D46A1A",
+    indoorStart:-28, indoorEnd:-14,
+    transplantStart:14, transplantEnd:42,
+    directSow:true, directSowStart:14, directSowEnd:28,
+    fallDirect:false,
+    harvestFromTransplant:90, harvestDays:21 },
+
+  { name:"Blueberry (bare root)", cat:"Fruit", color:"#5A5AAA",
+    indoorStart:null,
+    directSow:false,
+    transplantStart:-28, transplantEnd:14,
+    fallDirect:true, fallDirectOffset:-21, fallDirectDays:28,
+    harvestFromTransplant:365, harvestDays:30 },
+
+  { name:"Raspberry / Blackberry", cat:"Fruit", color:"#8A2A6A",
+    indoorStart:null,
+    directSow:false,
+    transplantStart:-21, transplantEnd:21,
+    fallDirect:true, fallDirectOffset:-28, fallDirectDays:28,
+    harvestFromTransplant:365, harvestDays:45 },
+
+  { name:"Grape (bare root)", cat:"Fruit", color:"#6A3A8A",
+    indoorStart:null,
+    directSow:false,
+    transplantStart:-14, transplantEnd:28,
+    fallDirect:false,
+    harvestFromTransplant:365, harvestDays:30 },
+
+  { name:"Fig (container)", cat:"Fruit", color:"#7A5A3A",
+    indoorStart:null,
+    directSow:false,
+    transplantStart:14, transplantEnd:56,
+    fallDirect:false,
+    harvestFromTransplant:365, harvestDays:30 },
+
+  { name:"Rhubarb", cat:"Fruit", color:"#C03A5A",
+    indoorStart:-70, indoorEnd:-49,
+    transplantStart:-21, transplantEnd:14,
+    directSow:false,
+    fallDirect:true, fallDirectOffset:-28, fallDirectDays:21,
+    harvestFromTransplant:365, harvestDays:30 },
+
+  { name:"Ground Cherry / Tomatillo", cat:"Fruit", color:"#8AAA3A",
+    indoorStart:-56, indoorEnd:-42,
+    transplantStart:14, transplantEnd:42,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:70, harvestDays:45 },
+
+  { name:"Kiwi Berry (vine)", cat:"Fruit", color:"#5A8A3A",
+    indoorStart:null,
+    directSow:false,
+    transplantStart:14, transplantEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:365, harvestDays:21 },
+
+  // HERBS
+  { name:"Basil", cat:"Herbs", color:"#6ACA5A",
+    indoorStart:-42, indoorEnd:-28,
+    transplantStart:14, transplantEnd:42,
+    directSow:true, directSowStart:21, directSowEnd:56,
+    fallDirect:false,
+    harvestFromTransplant:30, harvestDays:90 },
+
+  { name:"Parsley", cat:"Herbs", color:"#4A9A3A",
+    indoorStart:-70, indoorEnd:-56,
+    transplantStart:-14, transplantEnd:21,
+    directSow:true, directSowStart:-14, directSowEnd:28,
+    fallDirect:false,
+    harvestFromTransplant:70, harvestDays:120 },
+
+  { name:"Cilantro", cat:"Herbs", color:"#5AAA4A",
+    indoorStart:null,
+    directSow:true, directSowStart:-21, directSowEnd:14,
+    fallDirect:true, fallDirectOffset:-49, fallDirectDays:28,
+    harvestFromTransplant:45, harvestDays:30 },
+
+  { name:"Dill", cat:"Herbs", color:"#7AAA5A",
+    indoorStart:null,
+    directSow:true, directSowStart:-14, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:40, harvestDays:30 },
+
+  { name:"Chives", cat:"Herbs", color:"#5A9A6A",
+    indoorStart:-56, indoorEnd:-42,
+    transplantStart:-14, transplantEnd:21,
+    directSow:true, directSowStart:-14, directSowEnd:28,
+    fallDirect:false,
+    harvestFromTransplant:60, harvestDays:120 },
+
+  { name:"Thyme", cat:"Herbs", color:"#7A8A5A",
+    indoorStart:-70, indoorEnd:-42,
+    transplantStart:0, transplantEnd:21,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:75, harvestDays:120 },
+
+  { name:"Rosemary", cat:"Herbs", color:"#5A7A8A",
+    indoorStart:-84, indoorEnd:-56,
+    transplantStart:14, transplantEnd:42,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:90, harvestDays:120 },
+
+  { name:"Oregano", cat:"Herbs", color:"#8A7A5A",
+    indoorStart:-56, indoorEnd:-42,
+    transplantStart:0, transplantEnd:28,
+    directSow:true, directSowStart:0, directSowEnd:28,
+    fallDirect:false,
+    harvestFromTransplant:70, harvestDays:120 },
+
+  { name:"Sage", cat:"Herbs", color:"#7A8A9A",
+    indoorStart:-56, indoorEnd:-42,
+    transplantStart:0, transplantEnd:28,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:75, harvestDays:120 },
+
+  // FLOWERS
+  { name:"Marigold", cat:"Flowers", color:"#E0A02A",
+    indoorStart:-42, indoorEnd:-28,
+    transplantStart:14, transplantEnd:42,
+    directSow:true, directSowStart:14, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:50, harvestDays:120 },
+
+  { name:"Zinnia", cat:"Flowers", color:"#E05A7A",
+    indoorStart:-28, indoorEnd:-14,
+    transplantStart:14, transplantEnd:42,
+    directSow:true, directSowStart:14, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:55, harvestDays:90 },
+
+  { name:"Sunflower", cat:"Flowers", color:"#E0CA2A",
+    indoorStart:null,
+    directSow:true, directSowStart:7, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:80, harvestDays:21 },
+
+  { name:"Nasturtium", cat:"Flowers", color:"#E07A2A",
+    indoorStart:null,
+    directSow:true, directSowStart:0, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:50, harvestDays:90 },
+
+  { name:"Cosmos", cat:"Flowers", color:"#D07A9A",
+    indoorStart:-28, indoorEnd:-14,
+    transplantStart:14, transplantEnd:42,
+    directSow:true, directSowStart:14, directSowEnd:42,
+    fallDirect:false,
+    harvestFromTransplant:60, harvestDays:90 },
+
+  { name:"Pansy / Viola", cat:"Flowers", color:"#8A5AAA",
+    indoorStart:-84, indoorEnd:-70,
+    transplantStart:-28, transplantEnd:0,
+    directSow:false,
+    fallDirect:true, fallDirectOffset:-84, fallDirectDays:21,
+    harvestFromTransplant:60, harvestDays:60 },
+
+  { name:"Snapdragon", cat:"Flowers", color:"#D05A6A",
+    indoorStart:-70, indoorEnd:-56,
+    transplantStart:-14, transplantEnd:14,
+    directSow:false,
+    fallDirect:false,
+    harvestFromTransplant:70, harvestDays:60 },
+];
+
+// ── CALENDAR ENGINE ──────────────────────────────────────────────────────────
+const MONTHS     = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_DAYS = [31,29,31,30,31,30,31,31,30,31,30,31];
+let TOTAL_WEEKS = 0, WEEK_STARTS = [];
+function buildWeekColumns() {
+  WEEK_STARTS = []; TOTAL_WEEKS = 0;
+  for (let m=0;m<12;m++) {
+    const w=Math.ceil(MONTH_DAYS[m]/7);
+    for (let i=0;i<w;i++) WEEK_STARTS.push({month:m,week:i,monthEnd:i===w-1});
+    TOTAL_WEEKS+=w;
+  }
+}
+buildWeekColumns();
+function dayOfYear(date){return Math.round((date-new Date(2024,0,1))/86400000);}
+function weekIndexForDay(doy){
+  let c=0,idx=0;
+  for(let m=0;m<12;m++){
+    const w=Math.ceil(MONTH_DAYS[m]/7),dpw=MONTH_DAYS[m]/w;
+    for(let i=0;i<w;i++){
+      if(doy>=Math.round(c+i*dpw)&&doy<Math.round(c+(i+1)*dpw))return idx;
+      idx++;
+    }
+    c+=MONTH_DAYS[m];
+  }
+  return Math.min(idx-1,TOTAL_WEEKS-1);
+}
+
+// Convert day-of-year (2024 base) to "Mon DD" string
+function doyToDateStr(doy) {
+  const d = new Date(2024, 0, 1);
+  d.setDate(d.getDate() + Math.max(0, Math.min(365, doy)));
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getPlantEvents(plant, springDOY, fallDOY) {
+  const events = [];
+
+  // Indoor sowing (spring)
+  if (plant.indoorStart != null && plant.indoorEnd != null) {
+    const s = springDOY + plant.indoorStart;
+    const e = springDOY + plant.indoorEnd;
+    events.push({
+      startDOY: s, endDOY: e,
+      cssClass: 'ev-sow-indoor',
+      label: 'Sow Indoors',
+      desc: `${plant.name} — start seeds indoors`,
+      dateRange: `${doyToDateStr(s)} – ${doyToDateStr(e)}`
+    });
+  }
+
+  // Transplanting (spring)
+  if (plant.transplantStart != null && plant.transplantEnd != null) {
+    const s = springDOY + plant.transplantStart;
+    const e = springDOY + plant.transplantEnd;
+    events.push({
+      startDOY: s, endDOY: e,
+      cssClass: 'ev-transplant',
+      label: 'Transplant Outside',
+      desc: `${plant.name} — move seedlings outdoors`,
+      dateRange: `${doyToDateStr(s)} – ${doyToDateStr(e)}`
+    });
+  }
+
+  // Direct sow (spring)
+  if (plant.directSow && plant.directSowStart != null) {
+    const s = springDOY + plant.directSowStart;
+    const e = springDOY + plant.directSowEnd;
+    events.push({
+      startDOY: s, endDOY: e,
+      cssClass: 'ev-direct-sow',
+      label: 'Direct Sow Outdoors',
+      desc: `${plant.name} — sow directly in garden`,
+      dateRange: `${doyToDateStr(s)} – ${doyToDateStr(e)}`
+    });
+  }
+
+  // Fall direct sow / planting
+  if (plant.fallDirect) {
+    const offset = plant.fallDirectOffset || -56;
+    const days = plant.fallDirectDays || 21;
+    const s = fallDOY + offset;
+    const e = fallDOY + offset + days;
+    events.push({
+      startDOY: s, endDOY: e,
+      cssClass: 'ev-sow-outdoor',
+      label: plant.fallNote || 'Fall Planting',
+      desc: `${plant.name} — ${plant.fallNote || 'fall sowing for autumn harvest'}`,
+      dateRange: `${doyToDateStr(s)} – ${doyToDateStr(e)}`
+    });
+  }
+
+  // Harvest estimate (based on transplant or direct sow)
+  const baseForHarvest = (plant.transplantStart != null)
+    ? springDOY + plant.transplantStart
+    : (plant.directSow ? springDOY + (plant.directSowStart||0) : null);
+
+  if (baseForHarvest != null && plant.harvestFromTransplant) {
+    const hStart = baseForHarvest + plant.harvestFromTransplant;
+    const hEnd = hStart + (plant.harvestDays || 21);
+    if (hStart < 366) {
+      const clampedEnd = Math.min(hEnd, 365);
+      events.push({
+        startDOY: hStart, endDOY: clampedEnd,
+        cssClass: 'ev-harvest',
+        label: 'Harvest Window',
+        desc: `${plant.name} — expected harvest`,
+        dateRange: `${doyToDateStr(hStart)} – ${doyToDateStr(clampedEnd)}`
+      });
+    }
+  }
+
+  // Clamp to year
+  return events
+    .filter(e => e.endDOY > 0 && e.startDOY < 366)
+    .map(e => ({
+      ...e,
+      startDOY: Math.max(0, e.startDOY),
+      endDOY: Math.min(365, e.endDOY)
+    }));
+}
+
+
+let collapsedCats=new Set(), activeCat='All';
+
+// Clock
+function tickClock(){
+  const n=new Date(),h=n.getHours(),m=n.getMinutes(),s=n.getSeconds();
+  const ap=h>=12?'PM':'AM',hh=h%12||12;
+  const el=document.getElementById('clockTime');
+  if(el)el.textContent=`${String(hh).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${ap}`;
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const el2=document.getElementById('clockDate');
+  if(el2)el2.textContent=`${days[n.getDay()]} ${months[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`;
+}
+tickClock(); setInterval(tickClock,1000);
+
+// Mobile nav toggle
+document.getElementById('nav-toggle').addEventListener('click',()=>{
+  document.getElementById('nav-links').classList.toggle('open');
+});
+
+// Frost warnings
+function buildWarnings(spring,fall){
+  const now=new Date();
+  const tDOY=Math.round((new Date(now.getFullYear(),now.getMonth(),now.getDate())-new Date(now.getFullYear(),0,1))/86400000);
+  const sy=new Date(now.getFullYear(),spring.getMonth(),spring.getDate());
+  const fy=new Date(now.getFullYear(),fall.getMonth(),fall.getDate());
+  const sDOY=Math.round((sy-new Date(now.getFullYear(),0,1))/86400000);
+  const fDOY=Math.round((fy-new Date(now.getFullYear(),0,1))/86400000);
+  const dts=sDOY-tDOY,dtf=fDOY-tDOY;
+  const mn=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const ss=`${mn[spring.getMonth()]} ${spring.getDate()}`,fs=`${mn[fall.getMonth()]} ${fall.getDate()}`;
+  const W=[];
+  if(dts>60) W.push({type:'info',icon:'🌨️',title:'Deep Winter — Planning Season',
+    text:`Last spring frost is <strong>${ss}</strong> — <strong>${dts} days away</strong>. Ideal time to order seeds and start slow-growing crops indoors.`,
+    actions:['Order seeds for the coming season','Start onion & celery seeds indoors','Prepare grow lights and seed-starting mix']});
+  else if(dts>28) W.push({type:'caution',icon:'❄️',title:'Pre-Season Frost Risk',
+    text:`Last spring frost (<strong>${ss}</strong>) is <strong>${dts} days away</strong>. Only cold-hardy crops can go outside — protect with row covers.`,
+    actions:['Start tomatoes, peppers & eggplant indoors','Direct sow spinach, peas & radishes under row cover','Keep frost-sensitive crops inside']});
+  else if(dts>7) W.push({type:'caution',icon:'⚠️',title:`Frost Expected in ${dts} Days`,
+    text:`Last spring frost (<strong>${ss}</strong>) is approaching. Harden off cold-tolerant transplants; keep tender seedlings inside.`,
+    actions:['Begin hardening off cabbage, broccoli & lettuce','Keep tomatoes, peppers & basil indoors','Cover any outdoor plants if temps drop below 35°F']});
+  else if(dts>=-7) W.push({type:'danger',icon:'🚨',title:'Last Spring Frost Zone — High Risk',
+    text:`Within one week of last spring frost (<strong>${ss}</strong>). Overnight temperatures can still freeze.`,
+    actions:['Cover frost-sensitive transplants each night','Do not transplant tomatoes, peppers or basil yet','Monitor overnight lows closely']});
+  else if(dts>=-42) W.push({type:'safe',icon:'🌱',title:'Spring Growing Season Underway',
+    text:`Last spring frost was <strong>${ss}</strong> (${Math.abs(dts)} days ago). Safe to transplant warm-season crops.`,
+    actions:['Transplant tomatoes, peppers & eggplant outdoors','Direct sow beans, cucumbers, squash & corn','Watch for late cold snaps in the first two weeks post-frost']});
+  if(dtf>0&&dtf<=60){
+    W.push({type:dtf<=21?'danger':'caution',icon:dtf<=21?'🍂':'🌬️',title:`First Fall Frost in ${dtf} Days`,
+      text:`First fall frost expected around <strong>${fs}</strong>. Begin harvesting warm-season crops.`,
+      actions:[dtf<=21?'Harvest all tomatoes, peppers & squash before frost':'Plan final warm-season harvests',
+               'Start fall crops — kale, spinach & radishes can still mature','Bring in frost-sensitive container plants']});
+  } else if(dtf<0&&dtf>=-14){
+    W.push({type:'danger',icon:'🥶',title:'First Fall Frost Has Passed',
+      text:`Fall frost occurred around <strong>${fs}</strong>. Harvest or protect remaining warm-season crops.`,
+      actions:['Harvest root vegetables before hard freeze','Mulch kale, chard & leeks to extend the season','Plant garlic now for next summer']});
+  } else if(dtf<-14){
+    W.push({type:'info',icon:'❄️',title:'Fall / Winter Season',
+      text:`Growing season has wound down. First fall frost was <strong>${fs}</strong>.`,
+      actions:['Plant garlic for next season if not done','Grow spinach or lettuce in cold frames','Begin planning and ordering seeds for spring']});
+  }
+  document.getElementById('warningZone').innerHTML=W.map((w,i)=>`
+    <div class="warn-card ${w.type}" style="animation-delay:${i*.08}s">
+      <div class="warn-icon">${w.icon}</div>
+      <div class="warn-body">
+        <div class="warn-title">${w.title}</div>
+        <div class="warn-text">${w.text}</div>
+        <div class="warn-actions">${w.actions.map(a=>`<span class="warn-action">${a}</span>`).join('')}</div>
+      </div>
+    </div>`).join('');
+}
+
+// Toggle category
+function toggleCat(cat){
+  if(collapsedCats.has(cat))collapsedCats.delete(cat);else collapsedCats.add(cat);
+  const id=cat.replace(/[^a-zA-Z]/g,'_');
+  const icon=document.getElementById('arrow-'+id);
+  if(icon)icon.classList.toggle('closed',collapsedCats.has(cat));
+  document.querySelectorAll(`[data-cat="${cat}"]`).forEach(r=>r.classList.toggle('hidden-row',collapsedCats.has(cat)));
+}
+
+// Render table
+function renderTable(springDOY,fallDOY){
+  const sw=weekIndexForDay(springDOY),fw=weekIndexForDay(fallDOY);
+  const plants=activeCat==='All'?PLANTS:PLANTS.filter(p=>p.cat===activeCat);
+  let html='<thead><tr class="month-row"><th class="plant-col">Plant</th>';
+  for(let m=0;m<12;m++) html+=`<th colspan="${Math.ceil(MONTH_DAYS[m]/7)}">${MONTHS[m]}</th>`;
+  html+='</tr><tr class="week-row"><th class="plant-col">Category</th>';
+  for(let i=0;i<WEEK_STARTS.length;i++){
+    const f=(i===sw||i===fw);
+    const lbl=f?'❄':(WEEK_STARTS[i].week===0?'W1':(WEEK_STARTS[i].week===2?'W3':''));
+    html+=`<th${f?' class="frost-wk"':''}>${lbl}</th>`;
+  }
+  html+='</tr></thead><tbody>';
+  let lastCat=null;
+  plants.forEach(plant=>{
+    if(plant.cat!==lastCat){
+      lastCat=plant.cat;
+      const id=plant.cat.replace(/[^a-zA-Z]/g,'_');
+      const count=plants.filter(p=>p.cat===plant.cat).length;
+      const closed=collapsedCats.has(plant.cat);
+      html+=`<tr class="cat-row" onclick="toggleCat('${plant.cat}')"><td colspan="${TOTAL_WEEKS+1}">
+        <span class="cat-arrow${closed?' closed':''}" id="arrow-${id}">▼</span>${plant.cat}
+        <span class="cat-badge">${count} plants</span></td></tr>`;
+    }
+    html+=`<tr class="plant-row${collapsedCats.has(plant.cat)?' hidden-row':''}" data-cat="${plant.cat}">
+      <td class="plant-cell"><div class="plant-name">${plant.name}</div><div class="plant-cat">${plant.cat}</div></td>`;
+    const events=getPlantEvents(plant,springDOY,fallDOY);
+    for(let i=0;i<TOTAL_WEEKS;i++){
+      let inner='';
+      events.forEach(ev=>{
+        const s=weekIndexForDay(ev.startDOY),e=weekIndexForDay(ev.endDOY);
+        if(i>=s&&i<=e) inner+=`<div class="ebar ${ev.cssClass}" data-label="${ev.label}" data-desc="${ev.desc}" data-dates="${ev.dateRange}" onmouseenter="showTip(event,this)" onmouseleave="hideTip()"></div>`;
+      });
+      if(i===sw||i===fw) inner+=`<div class="frost-line"></div>`;
+      html+=`<td class="wcell${WEEK_STARTS[i].monthEnd?' mend':''}">${inner}</td>`;
+    }
+    html+='</tr>';
+  });
+  document.getElementById('calTable').innerHTML=html+'</tbody>';
+}
+
+// Tooltip
+const tip=document.getElementById('tip');
+function showTip(e,el){
+  tip.innerHTML=`<span class="tip-label">${el.dataset.label}</span><span class="tip-dates">${el.dataset.dates}</span><span class="tip-desc">${el.dataset.desc}</span>`;
+  tip.classList.add('show'); moveTip(e);
+}
+function hideTip(){tip.classList.remove('show');}
+document.addEventListener('mousemove',moveTip);
+function moveTip(e){tip.style.left=(e.clientX+16)+'px';tip.style.top=(e.clientY-44)+'px';}
+
+// Load
+function loadCalendar(){
+  const zip=document.getElementById('zipInput').value.trim();
+  const pill=document.getElementById('statusPill');
+  pill.className='status-pill';
+  if(!/^\d{5}$/.test(zip)){pill.className='status-pill err';pill.textContent='Invalid ZIP';return;}
+  pill.className='status-pill load';pill.textContent='Loading…';
+  setTimeout(()=>{
+    const fd=getFrostDates(zip);
+    if(!fd){pill.className='status-pill err';pill.textContent='ZIP not found';return;}
+    pill.className='status-pill';
+    const{spring,fall}=fd;
+    const sDOY=dayOfYear(spring),fDOY=dayOfYear(fall);
+    const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('chipSpring').textContent=`${mn[spring.getMonth()]} ${spring.getDate()}`;
+    document.getElementById('chipFall').textContent=`${mn[fall.getMonth()]} ${fall.getDate()}`;
+    document.getElementById('chipSeason').textContent=`${fDOY-sDOY} days`;
+    document.getElementById('frostChips').style.display='flex';
+    buildWarnings(spring,fall);
+    const cats=['All',...new Set(PLANTS.map(p=>p.cat))];
+    document.getElementById('filterRow').innerHTML=
+      '<span class="ctrl-label">Filter:</span>'+
+      cats.map(c=>`<button class="filter-btn${c===activeCat?' active':''}" onclick="setFilter('${c}',this)">${c}</button>`).join('');
+    document.getElementById('placeholder').style.display='none';
+    document.getElementById('calSection').style.display='block';
+    renderTable(sDOY,fDOY);
+  },60);
+}
+function setFilter(cat,btn){
+  activeCat=cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const fd=getFrostDates(document.getElementById('zipInput').value.trim());
+  if(fd) renderTable(dayOfYear(fd.spring),dayOfYear(fd.fall));
+}
+document.getElementById('zipInput').addEventListener('keydown',e=>{if(e.key==='Enter')loadCalendar();});
+window.addEventListener('load',()=>{document.getElementById('zipInput').value='37201';loadCalendar();});
+</script>
+</body>
+</html>

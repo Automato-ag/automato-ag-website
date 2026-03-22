@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Docs — Automato.ag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* shared styles — automato.ag */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #fdf8f0; --cream-mid: #f5f0e4; --cream-dark: #f0ede4;
+  --card-bg: #fffdf8; --border: #e2d8c4; --border-soft: #ede4d0;
+  --green: #3d6b2c; --green-light: #5a9a3a; --green-pale: #eaf5de; --green-tag: #c0dca0;
+  --amber: #c47a2a; --amber-pale: #fdf0dc; --amber-tag: #e8cc9a;
+  --text-dark: #1e2e14; --text-body: #5a4a30; --text-mid: #6a5a40; --text-muted: #7a6a50; --text-light: #a08060;
+  --footer-bg: #2a1e0e; --footer-text: #c8d8b0; --footer-muted: #6a5a3a;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-dark); font-size: 16px; line-height: 1.6; }
+a { color: inherit; text-decoration: none; }
+.mono { font-family: 'DM Mono', monospace; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 2.5rem; }
+.section { padding: 4.5rem 0; }
+hr.divider { border: none; border-top: 1px solid var(--border); }
+.section-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--amber); letter-spacing: .15em; text-transform: uppercase; margin-bottom: .5rem; }
+.section-title { font-size: 32px; font-weight: 700; color: var(--text-dark); margin-bottom: .4rem; }
+.section-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.65; }
+.btn-primary { background: var(--green); color: #fff; font-family: 'DM Sans',sans-serif; font-weight: 600; font-size: 14px; padding: 13px 26px; border-radius: 24px; border: none; cursor: pointer; display: inline-block; }
+.btn-primary:hover { background: #4a8035; }
+.btn-ghost { background: transparent; color: var(--green); font-family: 'DM Sans',sans-serif; font-weight: 600; font-size: 14px; padding: 12px 26px; border-radius: 24px; border: 2px solid var(--green-tag); cursor: pointer; display: inline-block; }
+.btn-ghost:hover { background: var(--green-pale); }
+.btn-amber { background: var(--amber); color: #fff; font-family: 'DM Sans',sans-serif; font-weight: 600; font-size: 14px; padding: 13px 26px; border-radius: 24px; border: none; cursor: pointer; display: inline-block; }
+.btn-amber:hover { background: #b06820; }
+.nav { position: sticky; top: 0; z-index: 100; background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 1rem 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-size: 20px; font-weight: 700; color: var(--green); letter-spacing: .04em; }
+.nav-logo span { color: var(--amber); }
+.nav-links { display: flex; gap: 2rem; }
+.nav-links a { font-size: 14px; color: var(--text-muted); transition: color .15s; }
+.nav-links a:hover, .nav-links a.active { color: var(--green); font-weight: 600; }
+.nav-cta { background: var(--green); color: #fff; font-family: 'DM Sans',sans-serif; font-weight: 600; font-size: 13px; padding: 9px 20px; border-radius: 20px; border: none; cursor: pointer; }
+.nav-cta:hover { background: #4a8035; }
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; gap: 5px; padding: 4px; }
+.nav-toggle span { display: block; width: 22px; height: 2px; background: var(--text-muted); border-radius: 2px; }
+.footer-wrap { background: var(--footer-bg); }
+.footer { padding: 2.5rem; display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; flex-wrap: wrap; gap: 1rem; }
+.footer-logo { font-size: 17px; font-weight: 700; color: var(--footer-text); }
+.footer-logo span { color: #e8a84a; }
+.footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.footer-links a { font-size: 13px; color: #8a7a5a; transition: color .12s; }
+.footer-links a:hover { color: var(--footer-text); }
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--footer-muted); }
+.product-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.product-card.featured { border-color: var(--green-light); box-shadow: 0 0 0 3px #e8f5dc; }
+.card-badge { position: absolute; top: 14px; right: 14px; background: var(--green); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 20px; letter-spacing: .06em; text-transform: uppercase; }
+.card-image { width: 100%; aspect-ratio: 1.2; background: var(--cream-mid); display: flex; align-items: center; justify-content: center; border-bottom: 1.5px solid var(--border); }
+.card-body { padding: 1.3rem 1.4rem; flex: 1; display: flex; flex-direction: column; }
+.card-body h3 { font-size: 17px; font-weight: 700; margin-bottom: .4rem; }
+.card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.65; margin-bottom: 1rem; flex: 1; }
+.card-specs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.2rem; }
+.spec-tag { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green); background: var(--green-pale); border: 1px solid var(--green-tag); padding: 3px 9px; border-radius: 20px; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border-soft); }
+.card-price { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; color: var(--green); }
+.card-btn { background: var(--green); color: #fff; font-family: 'DM Sans',sans-serif; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 20px; border: none; cursor: pointer; }
+.card-btn:hover { background: #4a8035; }
+.card-btn-ghost { background: transparent; color: #5a7a44; font-family: 'DM Sans',sans-serif; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 20px; border: 1.5px solid var(--green-tag); cursor: pointer; }
+.card-btn-ghost:hover { background: var(--green-pale); }
+@media (max-width: 600px) {
+  .nav-links, .nav-cta { display: none; }
+  .nav-toggle { display: flex; }
+  .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 60px; left: 0; right: 0; background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 1rem 2rem; gap: 1rem; z-index: 99; }
+  .container { padding: 0 1.2rem; }
+  .nav { padding: 1rem 1.2rem; }
+  .section-title { font-size: 26px; }
+}
+
+
+.docs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
+.doc-card { background:var(--card-bg); border:1.5px solid var(--border); border-radius:14px; padding:1.4rem; transition:border-color .15s; }
+.doc-card:hover { border-color:var(--green-light); }
+.doc-icon { font-size:26px; margin-bottom:.8rem; }
+.doc-card h4 { font-size:15px; font-weight:700; margin-bottom:.4rem; }
+.doc-card > p { font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:1rem; }
+.doc-links { display:flex; flex-direction:column; gap:5px; }
+.doc-link { font-family:'DM Mono',monospace; font-size:11px; color:var(--green); display:flex; align-items:center; gap:5px; }
+.doc-link:hover { color:#2a4e1c; }
+.doc-link::before { content:'→'; font-size:10px; }
+.search-bar { display:flex; gap:.8rem; margin-bottom:2.5rem; }
+.search-bar input { flex:1; padding:12px 16px; border:1.5px solid var(--border); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:15px; background:var(--card-bg); color:var(--text-dark); outline:none; }
+.search-bar input:focus { border-color:var(--green); }
+@media(max-width:900px){.docs-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.docs-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="index.html" class="nav-logo">Automato<span>.ag</span></a>
+  <div class="nav-links" id="nav-links"><a href="products.html">Products</a><a href="docs.html" class="active">Docs</a><a href="github.html">GitHub</a><a href="planting-calendar.html">Planting Calendar</a><a href="about.html">About</a><a href="contact.html">Contact</a></div>
+  <a class="nav-cta" href="products.html">Shop now</a>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<main>
+<section class="section">
+  <div class="container">
+    <p class="section-label">Documentation</p>
+    <h2 class="section-title">Everything you need to build</h2>
+    <p class="section-sub">Guides, references, and setup walkthroughs &mdash; from first boot to full automation.</p>
+    <div class="search-bar">
+      <input type="text" placeholder="Search docs&hellip;" oninput="filterDocs(this.value)"/>
+    </div>
+    <div class="docs-grid" id="docs-grid">
+      <div class="doc-card" data-tags="getting started quick start flash arduino install board package relay">
+        <div class="doc-icon">🚀</div><h4>Getting started</h4>
+        <p>Flash your first board and get sensor data on your screen in under 10 minutes.</p>
+        <div class="doc-links">
+          <a class="doc-link" href="#">Brain Board quick start</a>
+          <a class="doc-link" href="#">Sensor Board quick start</a>
+          <a class="doc-link" href="#">Installing the Arduino board package</a>
+          <a class="doc-link" href="#">Your first relay automation</a>
+        </div>
+      </div>
+      <div class="doc-card" data-tags="firmware api code library reference pin relay esp-now">
+        <div class="doc-icon">📖</div><h4>Code &amp; API reference</h4>
+        <p>Full firmware documentation, library APIs, and hardware pin references.</p>
+        <div class="doc-links">
+          <a class="doc-link" href="#">Brain Board firmware reference</a>
+          <a class="doc-link" href="#">Sensor Board firmware reference</a>
+          <a class="doc-link" href="#">Relay control API</a>
+          <a class="doc-link" href="#">ESP-NOW mesh networking</a>
+        </div>
+      </div>
+      <div class="doc-card" data-tags="hydroponics pump pH EC aquaculture dosing nutrient lighting schedule">
+        <div class="doc-icon">🌱</div><h4>Hydroponics setup</h4>
+        <p>Monitor and automate a hydroponic system from sensor wiring to threshold rules.</p>
+        <div class="doc-links">
+          <a class="doc-link" href="#">Nutrient dosing automation</a>
+          <a class="doc-link" href="#">pH &amp; EC sensor wiring</a>
+          <a class="doc-link" href="#">Pump &amp; lighting schedules</a>
+          <a class="doc-link" href="#">Multi-zone setup guide</a>
+        </div>
+      </div>
+      <div class="doc-card" data-tags="mycology mushroom fruiting chamber humidity CO2 FAE fan alert">
+        <div class="doc-icon">🍄</div><h4>Mycology &amp; indoor grows</h4>
+        <p>Dial in humidity, temperature, and fresh air exchange for fruiting chambers.</p>
+        <div class="doc-links">
+          <a class="doc-link" href="#">Fruiting chamber setup</a>
+          <a class="doc-link" href="#">Humidity &amp; CO₂ control</a>
+          <a class="doc-link" href="#">FAE fan automation</a>
+          <a class="doc-link" href="#">Alert thresholds guide</a>
+        </div>
+      </div>
+      <div class="doc-card" data-tags="greenhouse outdoor solar battery LoRa irrigation mesh multi-node">
+        <div class="doc-icon">🌿</div><h4>Greenhouse &amp; outdoor</h4>
+        <p>Deploy multi-node networks across large spaces with solar power and long-range radio.</p>
+        <div class="doc-links">
+          <a class="doc-link" href="#">Multi-node ESP-NOW mesh</a>
+          <a class="doc-link" href="#">Solar &amp; battery power</a>
+          <a class="doc-link" href="#">Irrigation automation</a>
+          <a class="doc-link" href="#">LoRa long-range setup</a>
+        </div>
+      </div>
+      <div class="doc-card" data-tags="hardware schematic BOM kicad qwiic relay wiring safety expansion">
+        <div class="doc-icon">🔧</div><h4>Hardware &amp; expansion</h4>
+        <p>Schematics, BOM, Qwiic sensor compatibility, and custom hardware guides.</p>
+        <div class="doc-links">
+          <a class="doc-link" href="#">Brain Board hardware reference</a>
+          <a class="doc-link" href="#">Qwiic sensor compatibility</a>
+          <a class="doc-link" href="#">Relay wiring &amp; safety</a>
+          <a class="doc-link" href="https://github.com/Automato-ag" target="_blank">KiCad files on GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<script>
+function filterDocs(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#docs-grid .doc-card').forEach(card => {
+    const text = (card.innerText + card.dataset.tags).toLowerCase();
+    card.style.display = text.includes(q) ? '' : 'none';
+  });
+}
+</script>
+<footer class="footer-wrap">
+  <div class="footer">
+    <a href="index.html" class="footer-logo">Automato<span>.ag</span></a>
+    <nav class="footer-links">
+      <a href="products.html">Products</a>
+      <a href="docs.html">Docs</a>
+      <a href="github.html">GitHub</a>
+      <a href="planting-calendar.html">Planting Calendar</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <p class="footer-copy">© 2026 Automato.ag</p>
+  </div>
+</footer>
+<script>
+const t=document.getElementById('nav-toggle'),n=document.getElementById('nav-links');
+t.addEventListener('click',()=>n.classList.toggle('open'));
+n.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>n.classList.remove('open')));
+</script>
+</body>
+</html>
